@@ -7,27 +7,9 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  Future<dynamic> onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) async {
-    // display a dialog with the notification details, tap ok to go to another page
-    showDialog(
-      context: null,
-      builder: (BuildContext context) => CupertinoAlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          CupertinoDialogAction(
-              isDefaultAction: true, child: Text('Ok'), onPressed: () {})
-        ],
-      ),
-    );
-  }
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    otherStuff();
-
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -45,12 +27,32 @@ class MyApp extends StatelessWidget {
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
+}
 
+class MyHomePage extends StatefulWidget {
+  Future<dynamic> onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    showDialog(
+      context: null,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          CupertinoDialogAction(
+              isDefaultAction: true, child: Text('Ok'), onPressed: () {})
+        ],
+      ),
+    );
+  }
+
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  NotificationDetails platformChannelSpecifics;
+  InitializationSettings initializationSettings;
   void otherStuff() async {
     // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
 
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@drawable/notification_icon_foodest');
@@ -59,11 +61,10 @@ class MyApp extends StatelessWidget {
             onDidReceiveLocalNotification: onDidReceiveLocalNotification);
     final MacOSInitializationSettings initializationSettingsMacOS =
         MacOSInitializationSettings();
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsIOS,
-            macOS: initializationSettingsMacOS);
+    initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+        macOS: initializationSettingsMacOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (abc) async {
       print("noti selected.!");
@@ -96,9 +97,7 @@ class MyApp extends StatelessWidget {
           sound: true,
         );
   }
-}
 
-class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
@@ -127,6 +126,9 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+      widget.flutterLocalNotificationsPlugin.show(
+          0, 'plain title', 'pressed for '+_counter.toString(), widget.platformChannelSpecifics,
+          payload: 'item x');
     });
   }
 
